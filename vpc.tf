@@ -35,6 +35,7 @@ resource "aws_subnet" "public" {
   tags = {
     Name = var.public_subnets[count.index].name
   }
+<<<<<<< HEAD
 
   depends_on = [ 
     aws_vpc_ipv4_cidr_block_association.main
@@ -130,4 +131,6 @@ resource "aws_route_table_association" "private"{
   count = length(var.private_subnets)
   subnet_id = aws_subnet.private[count.index].id
   route_table_id= aws_route_table.private[count.index].id
+=======
+>>>>>>> fa9d9d26cdab2de4607cc6107956f3bb5982e7af
 }

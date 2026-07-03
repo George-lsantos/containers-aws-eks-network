@@ -1,0 +1,19 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Variáveis sensíveis (opcional)
+*.auto.tfvars
+
+# Arquivos locais
+.terraform.lock.hcl
+
+# VS Code
+.vscode/
+
+# Linux
+*.swp

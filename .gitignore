@@ -16,4 +16,5 @@ crash.*.log
 .vscode/
 
 # Linux
-*.swp
+*.swp*.tfvars
+!*.tfvars.example

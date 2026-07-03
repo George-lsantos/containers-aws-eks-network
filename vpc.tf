@@ -1,7 +1,7 @@
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
 
-  enable_dns_support = true
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
   assign_generated_ipv6_cidr_block = false
@@ -48,8 +48,8 @@ resource "aws_route_table" "public_internet_access" {
 }
 
 resource "aws_route" "public" {
-  route_table_id          = aws_route_table.public_internet_access.id
-  destination_cidr_block  = "0.0.0.0/0"
+  route_table_id         = aws_route_table.public_internet_access.id
+  destination_cidr_block = "0.0.0.0/0"
 
   gateway_id = aws_internet_gateway.igw.id
 }
@@ -111,8 +111,8 @@ resource "aws_route_table" "private" {
 resource "aws_route" "private" {
   count = length(var.private_subnets)
 
-  route_table_id          = aws_route_table.private[count.index].id
-  destination_cidr_block  = "0.0.0.0/0"
+  route_table_id         = aws_route_table.private[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
 
   nat_gateway_id = aws_nat_gateway.main[
     index(
@@ -146,25 +146,72 @@ resource "aws_subnet" "database" {
   ]
 }
 
-resource "aws_network_acl" "database"{
+resource "aws_network_acl" "database" {
 
   vpc_id = aws_vpc.main.id
-  
-    egress {
-      rule_no =200
-      protocol = "-1"
-      action = "allow"
-      cidr_block = "0.0.0.0/0"
-      from_port = 0
-      to_port = 0
-    }
 
-    tags = {
-      Name = format ( "%s-databases", var.project_name)
-    }
+  egress {
+    rule_no    = 200
+    protocol   = "-1"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  tags = {
+    Name = format("%s-databases", var.project_name)
+  }
 }
- 
-resource "aws_network_acl_rule" "deny"{
 
-  network_acl_id = aws
+resource "aws_network_acl_rule" "deny" {
+
+  network_acl_id = aws_network_acl.database.id
+  rule_number    = 300
+  rule_action    = "deny"
+  protocol       = "-1"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 0
+  to_port        = 0
+}
+
+resource "aws_network_acl_association" "database" {
+
+  count          = length(var.database_subnets)
+  subnet_id      = aws_subnet.database[count.index].id
+  network_acl_id = aws_network_acl.database.id
+}
+
+resource "aws_network_acl_rule" "allow" {
+
+  count          = length(var.private_subnets)
+  network_acl_id = aws_network_acl.database.id
+  rule_number    = 10 + count.index
+
+  egress      = false
+  rule_action = "allow"
+
+  protocol = "tcp"
+
+  cidr_block = aws_subnet.private[count.index].cidr_block
+  from_port  = 3306
+  to_port    = 3306
+
+}
+
+resource "aws_network_acl_rule" "allow_6379" {
+
+  count          = length(var.private_subnets)
+  network_acl_id = aws_network_acl.database.id
+  rule_number    = 20 + count.index
+
+  egress      = false
+  rule_action = "allow"
+
+  protocol = "tcp"
+
+  cidr_block = aws_subnet.private[count.index].cidr_block
+  from_port  = 6379
+  to_port    = 6379
+
 }

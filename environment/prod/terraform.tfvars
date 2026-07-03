@@ -42,5 +42,43 @@ private_subnets = [
         name = "vpc-private_subnets-1c"
         cidr = "10.0.32.0/20"
         availability_zone = "us-east-1c"
+        },
+// pods 
+        // pods (CGNAT range - VPC CNI custom networking)
+{
+    name              = "vpc-private_pods-1a"
+    cidr              = "100.64.0.0/18"
+    availability_zone = "us-east-1a"
+},
+{
+    name              = "vpc-private_pods-1b"
+    cidr              = "100.64.64.0/18"
+    availability_zone = "us-east-1b"
+},
+{
+    name              = "vpc-private_pods-1c"
+    cidr              = "100.64.128.0/18"
+    availability_zone = "us-east-1c"
+
+
+}
+]
+
+database_subnets = [
+
+    {
+        name = "vpc-database_subnets-1a"
+        cidr = "10.0.51.0/24"
+        availability_zone = "us-east-1a"
+        },
+        {
+        name = "vpc-database_subnets-1b"
+        cidr = "10.0.52.0/24"
+        availability_zone = "us-east-1b"
+        },
+        {
+        name = "vpc-database_subnets-1c"
+        cidr = "10.0.53.0/24"
+        availability_zone = "us-east-1c"
         }
 ]

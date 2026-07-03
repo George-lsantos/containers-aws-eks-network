@@ -34,3 +34,14 @@ variable "private_subnets" {
     availability_zone = string
   }))
 }
+
+variable "database_subnets" {
+  description = "Lista de Database das subnets"
+  default = []
+  
+  type = list(object({
+    name              = string
+    cidr              = string
+    availability_zone = string
+  }))
+}

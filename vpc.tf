@@ -11,9 +11,8 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_vpc_ipv4_cidr_block_association" "main" {
-
-count = length(var.vpc_additional_cidrs)
-vpc_id = aws_vpc.main.id
+  count      = length(var.vpc_additional_cidrs)
+  vpc_id     = aws_vpc.main.id
   cidr_block = var.vpc_additional_cidrs[count.index]
 }
 
@@ -24,35 +23,33 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-
 resource "aws_subnet" "public" {
-  count = length(var.public_subnets)
-  vpc_id = aws_vpc.main.id
-  cidr_block = var.public_subnets[count.index].cidr
-  availability_zone = var.public_subnets[count.index].availability_zone
+  count                   = length(var.public_subnets)
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnets[count.index].cidr
+  availability_zone       = var.public_subnets[count.index].availability_zone
   map_public_ip_on_launch = true
 
   tags = {
     Name = var.public_subnets[count.index].name
   }
-<<<<<<< HEAD
 
-  depends_on = [ 
+  depends_on = [
     aws_vpc_ipv4_cidr_block_association.main
-   ]
+  ]
 }
 
 resource "aws_route_table" "public_internet_access" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-  Name = "${var.project_name}-public-access"
+    Name = "${var.project_name}-public-access"
   }
 }
 
 resource "aws_route" "public" {
-  route_table_id = aws_route_table.public_internet_access.id
-  destination_cidr_block = "0.0.0.0/0"
+  route_table_id          = aws_route_table.public_internet_access.id
+  destination_cidr_block  = "0.0.0.0/0"
 
   gateway_id = aws_internet_gateway.igw.id
 }
@@ -60,9 +57,8 @@ resource "aws_route" "public" {
 resource "aws_route_table_association" "public" {
   count = length(var.public_subnets)
 
-  subnet_id = aws_subnet.public[count.index].id
+  subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public_internet_access.id
-  
 }
 
 resource "aws_eip" "eip" {
@@ -75,41 +71,40 @@ resource "aws_eip" "eip" {
   }
 }
 
-resource "aws_nat_gateway" "main"{
+resource "aws_nat_gateway" "main" {
   count = length(var.public_subnets)
 
   allocation_id = aws_eip.eip[count.index].id
-  subnet_id = aws_subnet.public[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
 
   tags = {
-         Name = format("%s-%s", var.project_name, var.public_subnets[count.index].availability_zone)
+    Name = format("%s-%s", var.project_name, var.public_subnets[count.index].availability_zone)
   }
 }
 
 #Recursos subnet private
 
 resource "aws_subnet" "private" {
-  count = length(var.private_subnets)
-  vpc_id = aws_vpc.main.id
-  cidr_block = var.private_subnets[count.index].cidr
+  count             = length(var.private_subnets)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_subnets[count.index].cidr
   availability_zone = var.private_subnets[count.index].availability_zone
-
 
   tags = {
     Name = var.private_subnets[count.index].name
   }
 
-  depends_on = [ 
+  depends_on = [
     aws_vpc_ipv4_cidr_block_association.main
-   ]
+  ]
 }
 
 resource "aws_route_table" "private" {
-  count = length(var.private_subnets)
+  count  = length(var.private_subnets)
   vpc_id = aws_vpc.main.id
 
-tags = {
-         Name = format("%s-%s", var.project_name, var.private_subnets[count.index].availability_zone)
+  tags = {
+    Name = format("%s-%s", var.project_name, var.private_subnets[count.index].availability_zone)
   }
 }
 
@@ -127,10 +122,9 @@ resource "aws_route" "private" {
   ].id
 }
 
-resource "aws_route_table_association" "private"{
+resource "aws_route_table_association" "private" {
   count = length(var.private_subnets)
-  subnet_id = aws_subnet.private[count.index].id
-  route_table_id= aws_route_table.private[count.index].id
-=======
->>>>>>> fa9d9d26cdab2de4607cc6107956f3bb5982e7af
+
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
 }
